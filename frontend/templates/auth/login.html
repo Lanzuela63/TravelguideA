@@ -1,0 +1,35 @@
+e{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: url('https://images.unsplash.com/photo-1583246234822-6a5393f13679?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
+        background-size: cover;
+    }
+    .card {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="min-height: 80vh; display: flex; align-items: center;">
+    <div class="row justify-content-center w-100">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <h2 class="card-title text-center mb-4 font-weight-bold">Welcome Back</h2>
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button class="btn btn-primary w-100 mt-3" type="submit">Login</button>
+                    </form>
+                    <p class="mt-4 text-center">Don't have an account? <a href="{% url 'web-register' %}" class="fw-bold">Register here</a>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

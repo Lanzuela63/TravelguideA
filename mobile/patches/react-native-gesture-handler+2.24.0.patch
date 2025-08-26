@@ -1,0 +1,22 @@
+diff --git a/node_modules/react-native-gesture-handler/android/build.gradle b/node_modules/react-native-gesture-handler/android/build.gradle
+index 1111111..2222222 100644
+--- a/node_modules/react-native-gesture-handler/android/build.gradle
++++ b/node_modules/react-native-gesture-handler/android/build.gradle
+ @TestProject\assets\images\react-logo@2x.png
+ apply plugin: 'com.android.library'
+ 
+ android {
+-    compileSdkVersion rootProject.ext.compileSdkVersion
++    namespace "com.swmansion.gesturehandler"
++    compileSdkVersion 34
++
++    defaultConfig {
++        minSdkVersion 23
++        targetSdkVersion 34
++    }
++
++    compileOptions {
++        sourceCompatibility JavaVersion.VERSION_17
++        targetCompatibility JavaVersion.VERSION_17
++    }
+ }

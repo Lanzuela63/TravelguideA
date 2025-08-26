@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+    {% load static %}
+
+<div class="container my-5">
+    <div class="card shadow-lg">
+        <!-- Large image -->
+        <img src="{% static spot.image %}" class="card-img-top img-fluid" alt="{{ spot.name }}">
+
+        <div class="card-body">
+            <h2 class="card-title">{{ spot.name }}</h2>
+            <p class="card-text">{{ spot.description }}</p>
+            <p><strong>Category:</strong> {{ spot.category }}</p>
+            <p><strong>Location:</strong> {{ spot.location }}</p>
+            <p><strong>Rating:</strong> ⭐ {{ spot.rating }}</p>
+        </div>
+
+        <!-- Map Section -->
+        <div class="card-body border-top">
+            <h4>Location Map</h4>
+            <div class="ratio ratio-16x9">
+                <iframe src="{{ spot.map_src }}"
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

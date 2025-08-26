@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: url('https://images.unsplash.com/photo-1583246234822-6a5393f13679?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
+        background-size: cover;
+    }
+    .card {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="min-height: 80vh; display: flex; align-items: center;">
+    <div class="row justify-content-center w-100">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <h2 class="card-title text-center mb-4 font-weight-bold">Create Your Account</h2>
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <div class="form-group mb-3">
+                            <label for="role" class="form-label">Select Role</label>
+                            <select name="role" class="form-select" required>
+                                <option value="" selected disabled>Choose your role...</option>
+                                <option value="Tourism Officer">Tourism Officer</option>
+                                <option value="Business Owner">Business Owner</option>
+                                <option value="Tourist">Tourist</option>
+                                <option value="Event Organizer">Event Organizer</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary w-100 mt-3" type="submit">Register</button>
+                    </form>
+                     <p class="mt-4 text-center">Already have an account? <a href="{% url 'login' %}" class="fw-bold">Login here</a>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

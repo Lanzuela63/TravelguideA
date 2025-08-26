@@ -1,0 +1,83 @@
+return {
+        "Admin": [
+            {
+                "icon": "bi bi-map-fill",
+                "title": "Tourist Spots",
+                "description": "Manage all tourist spots, from volcanoes to beaches.",
+                "url_name": "admin:tourism_touristspot_changelist", # Tourist Spots
+                "button": "Manage Spots"
+            },
+            {
+                "icon": "bi bi-tag-fill",
+                "title": "Categories",
+                "description": "Organize spots by categories like 'Nature' or 'Historical'.",
+                "url_name": "admin:tourism_category_changelist", # Categories
+                "button": "Manage Categories"
+            },
+            {
+                "icon": "bi bi-pin-map-fill",
+                "title": "Locations",
+                "description": "Manage provinces and cities where spots are located.",
+                "url_name": "admin:tourism_location_changelist", # Locations
+                "button": "Manage Locations"
+            },
+            {
+                "icon": "bi bi-people-fill",
+                "title": "Users",
+                "description": "Manage all registered users and their roles.",
+                "url_name": "admin:users_customuser_changelist", # Users
+                "button": "Manage Users"
+            },
+            {
+                "icon": "bi bi-images",
+                "title": "Content",
+                "description": "Manage other site content and media.",
+                "url_name": "admin:tourism_gallery_changelist", # Content
+                "button": "Manage Content"
+            },
+        ],
+        "Tourist": [
+            {
+                "icon": "bi bi-compass",
+                "title": "Explore Spots",
+                "description": "Discover new places to visit in the region.",
+                "url_name": "tourism:explore_spots",
+                "button": "Explore Now"
+            },
+            {
+                "icon": "bi bi-bookmark-heart",
+                "title": "My Saved Spots",
+                "description": "View your saved destinations.",
+                "url_name": "tourism:saved_spots",
+                "button": "View Saved"
+            }
+
+        ],
+        "Business Owner": [
+            {
+                "icon": "bi bi-shop",
+                "title": "My Business Listings",
+                "description": "Manage your business profiles and visibility.",
+                "url_name": "business:business_listings",
+                "button": "Manage Listings"
+            }
+        ],
+        "Event Organizer": [
+            {
+                "icon": "bi bi-calendar-event",
+                "title": "My Events",
+                "description": "Manage tourism-related events.",
+                "url_name": "events:manage_events",
+                "button": "Manage Events"
+            }
+        ],
+        "Tourism Officer": [
+            {
+                "icon": "bi bi-flag-fill",
+                "title": "Review Submissions",
+                "description": "Review new tourist spot and event submissions.",
+                "url_name": "tourism:review_spots",
+                "button": "Review Now"
+            }
+        ],
+    }.get(user_role, [])

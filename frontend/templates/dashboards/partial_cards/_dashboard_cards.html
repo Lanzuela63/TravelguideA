@@ -1,0 +1,22 @@
+<div class="row">
+  {% for card in cards %}
+    <div class="col-md-6 col-xl-4 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex align-items-center mb-3">
+            <i class="{{ card.icon }} fs-1 text-primary me-3"></i>
+            <div>
+              <h5 class="card-title mb-1">{{ card.title }}</h5>
+              <p class="card-text small text-muted">{{ card.description }}</p>
+            </div>
+          </div>
+          {% if card.button and card.url_name %}
+            <a href="{% url card.url_name %}" class="btn btn-sm btn-outline-primary mt-auto">{{ card.button }}</a>
+          {% elif card.link %}
+            <a href="{% url card.link %}" class="btn btn-sm btn-outline-primary mt-auto">{{ card.button|default:"Open" }}</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>

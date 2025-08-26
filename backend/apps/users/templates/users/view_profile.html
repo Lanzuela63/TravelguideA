@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container mt-4">
+  <div class="card mx-auto" style="max-width: 500px;">
+    <div class="card-body text-center">
+      {% if user.profile_image %}
+        <img src="{{ user.profile_image.url }}" class="rounded-circle mb-3" width="120" height="120">
+      {% else %}
+        <img src="{% static 'images/default_profile.png' %}" class="rounded-circle mb-3" width="120" height="120">
+      {% endif %}
+      <h4>{{ user.get_full_name|default:user.username }}</h4>
+      <p>{{ user.email }}</p>
+      <p>{{ user.bio }}</p>
+      <a href="{% url 'edit_profile' %}" class="btn btn-sm btn-outline-primary">Edit Profile</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

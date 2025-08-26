@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location AR Scene</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #0056b3;
+        }
+        p {
+            line-height: 1.6;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Location AR Scene</h1>
+        <p>{{ message }}</p>
+        <p>Backend Dummy Location: Latitude {{ latitude }}, Longitude {{ longitude }}</p>
+
+        <h2>Client-side Location:</h2>
+        <p id="clientLocationStatus">Attempting to get client-side location...</p>
+        <p>Latitude: <span id="clientLatitude">N/A</span></p>
+        <p>Longitude: <span id="clientLongitude">N/A</span></p>
+        <p>Accuracy: <span id="clientAccuracy">N/A</span> meters</p>
+        <p>Timestamp: <span id="clientTimestamp">N/A</span></p>
+    </div>
+
+    <script>
+        console.log('Script started.');
+
+        window.addEventListener('message', (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'native_location') {
+                document.getElementById('clientLocationStatus').innerText = 'Native location obtained:';
+                document.getElementById('clientLatitude').innerText = data.latitude;
+                document.getElementById('clientLongitude').innerText = data.longitude;
+                document.getElementById('clientAccuracy').innerText = data.accuracy;
+                document.getElementById('clientTimestamp').innerText = new Date().toLocaleString(); // Timestamp from when received
+            } else if (data.type === 'geolocation_error') {
+                document.getElementById('clientLocationStatus').innerText = `Geolocation Error: ${data.message} (Code: ${data.code})`;
+            } else if (data.type === 'geolocation_not_supported') {
+                document.getElementById('clientLocationStatus').innerText = 'Geolocation not supported by this browser.';
+            } else if (data.type === 'geolocation_sync_error') {
+                document.getElementById('clientLocationStatus').innerText = `Synchronous Geolocation Error: ${data.message}`;
+            } else {
+                console.log('Unknown message from WebView:', data);
+            }
+        });
+
+        // Remove the old navigator.geolocation code
+        document.getElementById('clientLocationStatus').innerText = 'Waiting for native location...';
+    </script>
+</body>
+</html>

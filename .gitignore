@@ -1,0 +1,53 @@
+
+---
+
+### ✅ `.gitignore` (with PostgreSQL and system files excluded)
+
+```gitignore
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.sqlite3
+
+# Virtual Environment
+.venv/
+env/
+ENV/
+venv/
+
+# Django specific
+*.log
+local_settings.py
+db.sqlite3
+media/
+staticfiles/
+
+# PostgreSQL dumps or backups (if any)
+*.psql
+*.sql
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# VSCode
+.vscode/
+
+# React Native
+node_modules/
+.expo/
+.expo-shared/
+android/app/build/
+ios/Pods/
+*.keystore
+
+# Environment variables
+.env
+.env.*
+
+# Git
+.git/

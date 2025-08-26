@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+
+{% block content %}
+<div class="container mt-4">
+  <h1>Event Organizer Dashboard</h1>
+
+  <div class="row g-3">
+    {% for card in dashboard_cards %}
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm hover-card">
+          <div class="card-body text-center">
+            {% if card.icon %}
+              <i class="{{ card.icon }} fs-2 mb-2 text-info"></i>
+            {% endif %}
+            <h5 class="card-title">{{ card.title }}</h5>
+            <p class="card-text">{{ card.description }}</p>
+            {% if card.link %}
+              <a href="{% url card.link %}" class="btn btn-info">{{ card.button|default:"Go" }}</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <h3 class="mt-5">Upcoming Events</h3>
+  <ul>
+    {% for event in upcoming_events %}
+      <li>{{ event.name }} – {{ event.date }}</li>
+    {% empty %}
+      <li>No upcoming events.</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+
+{% block content %}
+<div class="container mt-4">
+  <h1>Welcome, {{ user.username }}!</h1>
+
+  <div class="row g-3">
+    <div class="col-12 col-md-4">
+      <div class="card shadow-sm hover-card text-center">
+        <div class="card-body">
+          <i class="bi bi-star-fill icon-large text-primary mb-2"></i>
+          <h5 class="card-title">Saved Spots</h5>
+          <p class="card-text display-6">{{ dashboard_cards.saved_spots_count }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+      <div class="card shadow-sm hover-card text-center">
+        <div class="card-body">
+          <i class="bi bi-geo-alt-fill icon-large text-success mb-2"></i>
+          <h5 class="card-title">Approved Spots</h5>
+          <p class="card-text display-6">{{ dashboard_cards.approved_spots_count }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-4">
+      <div class="card shadow-sm hover-card text-center">
+        <div class="card-body">
+          <i class="bi bi-check-circle-fill icon-large text-info mb-2"></i>
+          <h5 class="card-title">Visited Spots</h5>
+          <p class="card-text display-6">{{ dashboard_cards.visited_spots_count }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

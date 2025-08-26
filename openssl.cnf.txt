@@ -1,0 +1,10 @@
+[req]
+distinguished_name = dn_cert
+
+[dn_cert]
+C = US
+ST = CA
+L = Mountain View
+O = Google
+OU = Gemini
+CN = 192.168.20.7

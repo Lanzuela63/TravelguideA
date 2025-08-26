@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+    {% load static %}
+<div class="explore-spots-gallery">
+  <div class="spot-image-section" data-spot="albay">
+    <img src="{% static 'images/explore_spots/Albay.png' %}" alt="Albay" class="spot-image">
+    <div class="spot-image-text">
+      <div class="spot-image-title">Discover Albay</div>
+      <div class="spot-image-desc">
+        Home to the majestic Mayon Volcano, Albay offers breathtaking views and rich cultural heritage.
+      </div>
+      <a class="explore-btn" data-spot="albay" href="{% url 'tourism:reported_spots_albay' %}">Explore More</a>
+    </div>
+  </div>
+  <div class="spot-image-section" data-spot="camsur">
+    <img src="{% static 'images/explore_spots/CamarinesSur.png' %}" alt="Camarines Sur" class="spot-image">
+    <div class="spot-image-text">
+      <div class="spot-image-title">Explore Camarines Sur</div>
+      <div class="spot-image-desc">
+        From wakeboarding adventure to serene lakes, CamSur is a paradise for thrill-seekers and nature lovers.
+      </div>
+      <a class="explore-btn" data-spot="camsur" href="{% url 'tourism:reported_spots_camsur' %}">Explore More</a>
+    </div>
+  </div>
+  <div class="spot-image-section" data-spot="sorsogon">
+    <img src="{% static 'images/explore_spots/Sorsogon.png' %}" alt="Sorsogon" class="spot-image">
+    <div class="spot-image-text">
+      <div class="spot-image-title">Visit Sorsogon</div>
+      <div class="spot-image-desc">
+        Known for whale shark interactions and pristine beaches, Sorsogon is perfect for a tropical getaway.
+      </div>
+      <a class="explore-btn" data-spot="sorsogon" href="{% url 'tourism:reported_spots_sorsogon' %}">Explore More</a>
+    </div>
+  </div>
+</div>
+<script src="{% static 'js/explore_spots.js' %}"></script>
+{% endblock %}

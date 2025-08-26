@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<!-- HERO SECTION -->
+<div class="hero-section bicol-bg">
+  <div class="hero-overlay">
+    <h1 class="hero-title">Welcome to Bicolandia</h1>
+    <p class="hero-subtitle">
+      Bicol Philippines’ best-known tourist destinations which is best known for spicy cuisine.
+    </p>
+    {% if not user.is_authenticated %}
+      <a href="{% url 'login' %}" class="hero-btn">Get Started</a>
+    {% else %}
+      <a href="{% url 'view_profile' %}" class="hero-btn">Your Profile</a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- FEATURES SECTION -->
+<div class="features">
+  <div class="feature-box"
+       onclick="{% if user.is_authenticated %}window.location.href='{% url 'tourism:explore_spots' %}'{% else %}alert('You need to have an account first.'){% endif %}"
+       style="cursor:pointer;">
+    <img src="{% static 'images/index/DiscoverProvinces.png' %}" class="feature-icon" alt="Discover Provinces Icon" />
+    <h2>Discover Provinces</h2>
+    <p>Find the best tourist spots & hidden gems in Bicolandia.</p>
+  </div>
+  <div class="feature-box">
+    <img src="{% static 'images/index/PlacesToGo.png' %}" class="feature-icon" alt="Places To Go Icon" />
+    <h2>Places To Go</h2>
+    <p>Top tourist attractions.</p>
+  </div>
+  <div class="feature-box">
+    <img src="{% static 'images/index/PlanYourTrip.png' %}" class="feature-icon" alt="Plan Your Trip Icon" />
+    <h2>Plan Your Trip</h2>
+    <p>Personalized travel itineraries and recommendations.</p>
+  </div>
+</div>
+
+<!-- AR SECTION -->
+<div class="ar-section ar-bg">
+  <div class="ar-content">
+    <h2>Explore with Augmented Reality</h2>
+    <p>Immerse yourself in virtual tours and experience Bicol like never before.</p>
+    <button>Coming Soon</button>
+  </div>
+</div>
+{% endblock %}
