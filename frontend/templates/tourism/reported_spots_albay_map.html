@@ -4,9 +4,12 @@
 
 <div class="container my-5">
     <div class="card shadow-lg">
-        <!-- Large image -->
-        <img src="{% static spot.image %}" class="card-img-top img-fluid" alt="{{ spot.name }}">
+        <!-- Large top image -->
+        <img src="{% static spot.image %}"
+             class="card-img-top img-fluid"
+             alt="{{ spot.name }}">
 
+        <!-- Info Section -->
         <div class="card-body">
             <h2 class="card-title">{{ spot.name }}</h2>
             <p class="card-text">{{ spot.description }}</p>
@@ -19,9 +22,10 @@
         <div class="card-body border-top">
             <h4>Location Map</h4>
             <div class="ratio ratio-16x9">
-                <iframe src="{{ spot.map_src }}"
-                        style="border:0;" 
-                        allowfullscreen="" 
+                <iframe src="{{ spot.embed_link|default:spot.map_url }}"
+                        width="100%" height="400"
+                        style="border:0;"
+                        allowfullscreen
                         loading="lazy"
                         referrerpolicy="no-referrer-when-downgrade"></iframe>
             </div>

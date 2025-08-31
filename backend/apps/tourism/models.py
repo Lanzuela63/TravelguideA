@@ -27,7 +27,7 @@ class TouristSpot(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     location = models.ForeignKey(Location, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='tourist_spots/', default='tourist_spots/default.jpg')
-    embed_link = models.TextField(blank=True, help_text="Google Maps embed link")
+    map_embed = models.TextField(blank=True, help_text="Google Maps embed link")
     website_link = models.URLField(blank=True, help_text="Social media or website link")
     is_featured = models.BooleanField(default=False)  # Show on homepage
     is_active = models.BooleanField(default=True)
@@ -108,7 +108,7 @@ class TourismReportedSpotAlbay(models.Model):
 
     class Meta:
         app_label = "tourism"
-        db_table = "tourism_reported_spots"
+        db_table = "tourism_reported_spots_albay"
         managed = False  # Django won’t try to create/migrate this table
         verbose_name = "Tourism Reported Spot"
         verbose_name_plural = "Tourism Reported Spots"
@@ -121,3 +121,17 @@ class TourismReportedSpotAlbay(models.Model):
         if self.image:
             return f"/static/images/reported_spots/albay/{self.image}"
         return "/static/images/reported_spots/albay/default.jpg"
+
+
+
+
+class ReportedSpot(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    location = models.CharField(max_length=255, blank=True, null=True)
+    image = models.ImageField(upload_to="reported_spots/", blank=True, null=True)
+    rating = models.DecimalField(max_digits=3, decimal_places=2, blank=True, null=True)
+    province = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.province})"

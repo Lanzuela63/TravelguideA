@@ -4,27 +4,43 @@
   {% for spot in spots %}
     <div class="carousel-card" id="spot-{{ spot.id }}">
       <div class="reported-spot-image">
-        <img src="{% static spot.image %}" alt="{{ spot.name }}">
+        {% if spot.image %}
+          <img src="{% static spot.image %}" alt="{{ spot.name }}">
+        {% else %}
+          <img src="{% static 'images/reported_spots/albay/default.jpg' %}" alt="No image">
+        {% endif %}
       </div>
       <div class="reported-spot-info">
-  <h3>{{ spot.name }}</h3>
-  <p>{{ spot.description }}</p>
-  <div class="category-rating-row">
-    <span class="category-name">{{ spot.category }}</span>
-    <span class="spot-rating">
-      {{ spot.rating|default:"No rating" }}
-      <span class="star">&#9733;</span>
-    </span>
-  </div>
-  <!-- Button to go to map view -->
-  <a href="{% url 'reported_spots_albay_map' spot.id %}" class="btn btn-primary" style="margin-top:10px;">
-    View on Map
-  </a>
-</div>
+        <h3>{{ spot.name }}</h3>
+        <p>{{ spot.description|truncatewords:20 }}</p>
+        <div class="category-rating-row">
+          <span class="category-name">
+            {{ spot.category.name|default:"Uncategorized" }}
+          </span>
+          <span class="spot-rating">
+            {{ spot.rating|default:"No rating" }}
+            <span class="star">&#9733;</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Entire card clickable -->
+      <a href="{% url 'tourism:reported_spot_albay_detail' spot.id %}"
+   class="stretched-link"
+   style="text-decoration:none; color:inherit;"></a>
+
     </div>
   {% endfor %}
+
   <button class="carousel-btn left-btn">&#10094;</button>
   <button class="carousel-btn right-btn">&#10095;</button>
+</div>
+
+<!-- View All button -->
+<div class="text-center mt-3">
+  <a href="{% url 'tourism:reported_spots_albay' %}" class="btn btn-secondary">
+    View All Albay Spots
+  </a>
 </div>
 
 <style>
@@ -55,6 +71,12 @@
   overflow: hidden;
 }
 
+.carousel-card .stretched-link {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+}
+
 .reported-spot-image {
   width: 100%;
   height: 50%;
@@ -69,7 +91,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 0;
   display: block;
 }
 
@@ -93,38 +114,27 @@
   margin-bottom: 8px;
 }
 
-/* Category and Rating row styles */
+/* Category + Rating row */
 .category-rating-row {
   display: flex;
-  flex-direction: row;
   justify-content: space-between;
   align-items: center;
   font-size: 1em;
-  margin-top: 5px;
-  margin-bottom: 5px;
+  margin-top: auto;
 }
 
 .category-name {
-  text-align: left;
-  flex: 1;
   font-weight: bold;
 }
 
 .spot-rating {
-  text-align: right;
-  flex: 0 0 auto;
-  color: #FFD700; /* gold color for star */
+  color: #FFD700;
   font-weight: bold;
 }
 
 .star {
-  color: #FFD700;
-  font-size: 1.1em;
   margin-left: 3px;
-  vertical-align: middle;
 }
-
-/* Carousel navigation buttons */
 .carousel-btn {
   position: absolute;
   top: 50%;
@@ -139,18 +149,9 @@
   z-index: 10;
   transition: background 0.3s;
 }
-
-.carousel-btn:hover {
-  background: rgba(0, 0, 0, 0.8);
-}
-
-.left-btn {
-  left: 10px;
-}
-
-.right-btn {
-  right: 10px;
-}
+.carousel-btn:hover { background: rgba(0, 0, 0, 0.8); }
+.left-btn { left: 10px; }
+.right-btn { right: 10px; }
 </style>
 
 <script>
@@ -203,7 +204,6 @@ document.addEventListener("DOMContentLoaded", function () {
   function startAutoRotate() {
     autoRotate = setInterval(nextCard, 4000);
   }
-
   function resetAutoRotate() {
     clearInterval(autoRotate);
     startAutoRotate();

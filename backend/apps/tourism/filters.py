@@ -1,5 +1,6 @@
 import django_filters
-from .models import TouristSpot, TourismReportedSpot
+from .models import TouristSpot, TourismReportedSpotAlbay
+
 
 
 class TouristSpotFilter(django_filters.FilterSet):

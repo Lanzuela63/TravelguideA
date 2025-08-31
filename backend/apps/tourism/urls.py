@@ -1,8 +1,7 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
-from apps.tourism.views import tourist_views
-
+from apps.tourism.views import main_views, tourist_views
 
 app_name = "tourism"
 
@@ -30,6 +29,8 @@ urlpatterns = [
     path('spots/', TouristSpotListCreateView.as_view(), name='spot-list-create'),
     path('spots/<int:pk>/', TouristSpotDetailView.as_view(), name='spot-detail'),
     path('spots/<int:pk>/full/', TouristSpotFullDetailView.as_view(), name='spot-full-detail'),
+    path("spots/", main_views.tourist_spot_list, name="tourist_spot_list"),
+    path("spots/<int:pk>/", main_views.tourist_spot_detail, name="tourist_spot_detail"),
 
     path('categories/', CategoryListCreateView.as_view(), name='category-list-create'),
     path('categories/<int:pk>/', CategoryDetailView.as_view(), name='category-detail'),
@@ -62,8 +63,10 @@ urlpatterns = [
     path('reports/sorsogon/', reported_spots_sorsogon, name='reported_spots_sorsogon'),
     path("explore/", tourist_views.explore_spots, name="explore_spots"),
     path("saved/", tourist_views.saved_spots, name="saved_spots"),
-    path("reported-spots/albay/", tourist_views.reported_spots_albay_carousel, name="reported_spots_albay_carousel"),
-    path("albay/spot/<int:spot_id>/", tourist_views.reported_spot_albay_map, name="reported_spot_albay_map"),]
+    path("reported-spots/albay/", main_views.reported_spots_albay_carousel, name="reported_spots_albay_carousel"),
+    path("reports/albay/<int:pk>/", main_views.reported_spots_albay_detail, name="reported_spot_albay_detail"),
+
+]
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

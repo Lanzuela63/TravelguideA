@@ -2,9 +2,10 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework import generics
 import csv
 from django.conf import settings
+from apps.tourism.models import TouristSpot, ReportedSpot
 
 from apps.tourism.models import (
-    TouristSpot, Category, Location, Review, Gallery, OperatingHour
+    TouristSpot, Category, Location, Review, Gallery, OperatingHour, TourismReportedSpotAlbay
 )
 from apps.tourism.serializers import (
     TouristSpotSerializer, CategorySerializer, LocationSerializer,
@@ -13,6 +14,7 @@ from apps.tourism.serializers import (
 )
 from apps.tourism.filters import TouristSpotFilter
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from django.db.models import Q
 
 
 # ============================================================
@@ -159,7 +161,7 @@ def _load_image_map():
         if not raw:
             return None
         fixed = raw.replace("\\", "/")
-        marker = "travelguide/shared/static/images/"
+        marker = "shared/static/images/"
         idx = fixed.find(marker)
         if idx >= 0:
             fixed = fixed[idx + len(marker):]
@@ -180,13 +182,44 @@ def _load_image_map():
     return image_map
 
 
+# ============================================================
+#   REPORTED SPOTS CAROUSEL + DETAIL (Albay, Camsur, Sorsogon)
+# ============================================================
+
 def reported_spots_albay_carousel(request):
-    albay_spots = TouristSpot.objects.filter(location__province__iexact='Albay', is_active=True)
+    # Filter by province='Albay' and active spots
+    albay_spots = TouristSpot.objects.filter(
+        Q(is_active=True),
+        province__iexact="Albay"
+    )
+
+    # Load external image map (your existing helper)
     image_map = _load_image_map()
     for spot in albay_spots:
-        spot.image = image_map.get(spot.id)
-    return render(request, 'tourism/reported_spots_albay_carousel.html', {
-        'spots': albay_spots,
+        if image_map.get(spot.id):
+            spot.image = image_map.get(spot.id)
+
+    return render(request, "tourism/reported_spots_albay_carousel.html", {
+        "spots": albay_spots,
+    })
+
+
+def reported_spots_albay_detail(request, pk: int):
+    spot = get_object_or_404(
+        TouristSpot.objects.select_related("location"),
+        pk=pk,
+        province__iexact="Albay",
+        is_active=True
+    )
+
+    more_spots = (TouristSpot.objects
+                  .filter(province__iexact="Albay", is_active=True)
+                  .exclude(pk=pk)
+                  .order_by("name")[:8])
+
+    return render(request, "tourism/reported_spots_albay_map.html", {
+        "spot": spot,
+        "more_spots": more_spots,
     })
 
 
@@ -199,7 +232,7 @@ def reported_spots_camsur(request):
                  spots.filter(category__name__icontains=query) |
                  spots.filter(location__name__icontains=query) |
                  spots.filter(location__region__icontains=query) |
-                 spots.filter(location__province__icontains=query))
+                 spots.filter(location__province__iexact='Camarines Sur'))
     categories = Category.objects.values_list('name', flat=True).distinct()
     camsur_spots = TouristSpot.objects.filter(location__province__iexact='Camarines Sur', is_active=True)
     image_map = _load_image_map()
@@ -222,7 +255,7 @@ def reported_spots_sorsogon(request):
                  spots.filter(category__name__icontains=query) |
                  spots.filter(location__name__icontains=query) |
                  spots.filter(location__region__icontains=query) |
-                 spots.filter(location__province__icontains=query))
+                 spots.filter(location__province__iexact='Sorsogon'))
     categories = Category.objects.values_list('name', flat=True).distinct()
     sorsogon_spots = TouristSpot.objects.filter(location__province__iexact='Sorsogon', is_active=True)
     image_map = _load_image_map()
@@ -237,23 +270,46 @@ def reported_spots_sorsogon(request):
 
 
 def reported_spots_albay(request):
-        query = request.GET.get('query', '')
-        spots = TouristSpot.objects.filter(is_active=True)
-        if query:
-            spots = (spots.filter(name__icontains=query) |
-                     spots.filter(description__icontains=query) |
-                     spots.filter(category__name__icontains=query) |
-                     spots.filter(location__name__icontains=query) |
-                     spots.filter(location__region__icontains=query) |
-                     spots.filter(location__province__icontains=query))
-        categories = Category.objects.values_list('name', flat=True).distinct()
-        albay_spots = TouristSpot.objects.filter(location__province__iexact='Albay', is_active=True)
-        image_map = _load_image_map()
-        for s in spots: s.image = image_map.get(s.id)
-        for s in albay_spots: s.image = image_map.get(s.id)
-        return render(request, 'tourism/reported_spots_albay.html', {
-            'spots': spots.distinct(),
-            'query': query,
-            'categories': categories,
-            'albay_spots': albay_spots,
-        })
+    query = request.GET.get('query', '')
+    spots = TouristSpot.objects.filter(is_active=True)
+    if query:
+        spots = (spots.filter(name__icontains=query) |
+                 spots.filter(description__icontains=query) |
+                 spots.filter(category__name__icontains=query) |
+                 spots.filter(location__name__icontains=query) |
+                 spots.filter(location__region__icontains=query) |
+                 spots.filter(location__province__iexact='Albay'))
+    categories = Category.objects.values_list('name', flat=True).distinct()
+    albay_spots = TouristSpot.objects.filter(location__province__iexact='Albay', is_active=True)
+    image_map = _load_image_map()
+    for s in spots: s.image = image_map.get(s.id)
+    for s in albay_spots: s.image = image_map.get(s.id)
+    return render(request, 'tourism/reported_spots_albay.html', {
+        'spots': spots.distinct(),
+        'query': query,
+        'categories': categories,
+        'albay_spots': albay_spots,
+    })
+
+
+# ============================================================
+#              TOURIST SPOT LIST/DETAIL (general)
+# ============================================================
+
+def tourist_spot_list(request):
+    spots = TouristSpot.objects.all()
+    return render(request, "tourism/tourist_spot_list.html", {"spots": spots})
+
+
+def tourist_spot_detail(request, pk):
+    spot = get_object_or_404(TouristSpot, pk=pk)
+    return render(request, "tourism/tourist_spot_detail.html", {"spot": spot})
+
+
+# ============================================================
+#              REPORTED SPOTS (LEGACY LIST)
+# ============================================================
+
+def reported_spots_albay_list(request):
+    spots = ReportedSpot.objects.filter(province__iexact="Albay")
+    return render(request, "tourism/reported_spots_albay_list.html", {"spots": spots})

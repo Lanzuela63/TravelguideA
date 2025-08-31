@@ -96,7 +96,7 @@ def reported_spots_sorsogon_carousel(request):
 
     return render(request, "tourism/reported_spots_sorsogon_carousel.html", {"spots": spots})
 
-def reported_spot_albay_map(request, spot_id):
+def reported_spots_albay_map(request, spot_id):
     """
     Expanded view for a single Albay tourist spot with map included.
     """
