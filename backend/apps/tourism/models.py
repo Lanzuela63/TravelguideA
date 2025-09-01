@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils.text import slugify
 
 
 class Category(models.Model):
@@ -28,10 +29,17 @@ class TouristSpot(models.Model):
     location = models.ForeignKey(Location, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='tourist_spots/', default='tourist_spots/default.jpg')
     map_embed = models.TextField(blank=True, help_text="Google Maps embed link")
-    website = models.URLField(blank=True, help_text="Social media or website link")
     is_featured = models.BooleanField(default=False)  # Show on homepage
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    website = models.URLField(blank=True, null=True)  # keep this
+    name_url = models.SlugField(unique=True, blank=True, null=True)  # allow nulls for now
+
+    def save(self, *args, **kwargs):
+        # Auto-generate slug if not manually provided
+        if not self.name_url:
+            self.name_url = slugify(self.name.replace(" ", ""))
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -121,8 +129,6 @@ class TourismReportedSpotAlbay(models.Model):
         if self.image:
             return f"/static/images/reported_spots/albay/{self.image}"
         return "/static/images/reported_spots/albay/default.jpg"
-
-
 
 
 class ReportedSpot(models.Model):

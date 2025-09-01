@@ -58,12 +58,16 @@ urlpatterns = [
     path('reports/', reported_spots, name='reported_spots'),
 
     # Combined province views (search/filter + carousel)
+    # Combined province views (search/filter + carousel)
     path('reports/albay/', reported_spots_albay, name='reported_spots_albay'),
     path('reports/camsur/', reported_spots_camsur, name='reported_spots_camsur'),
     path('reports/sorsogon/', reported_spots_sorsogon, name='reported_spots_sorsogon'),
+
     path("explore/", tourist_views.explore_spots, name="explore_spots"),
     path("saved/", tourist_views.saved_spots, name="saved_spots"),
-    path("reports/albay/<str:name>/", main_views.reported_spots_albay_detail, name="reported_spot_albay_detail"),
+
+    # ✅ Fixed to use name_url
+    path("reports/albay/<str:name_url>/", main_views.reported_spots_albay_detail, name="reported_spot_albay_detail"),
     path("reports/albay/map/<int:spot_id>/", main_views.reported_spots_albay_map, name="reported_spots_albay_map"),
 
 ]

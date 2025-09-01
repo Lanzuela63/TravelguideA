@@ -237,31 +237,15 @@ def reported_spots_albay_carousel(request):
 
 
 def reported_spots_albay_detail(request, name_url):
-    name_url_map = {
-        1: "KawaKawa",
-        2: "Masaraga",
-        3: "Tigbao",
-        4: "Languyon",
-        5: "LigaoMuseum",
-        6: "Bloom",
-        7: "Bernese",
-        8: "LigaoBnB",
-        9: "KuyangBnR",
-        10: "LaTerraza",
-        11: "PrimoBistro",
-        12: "BermanIceCream",
-    }
-    reverse_map = {v: k for k, v in name_url_map.items()}
-    spot_id = reverse_map.get(name_url)
-    spots = TouristSpot.objects.filter(is_active=True, location__province__iexact="Albay").select_related("category", "location")
-    image_map = _load_image_map()
-    for spot in spots:
-        spot.image = image_map.get(spot.id) or spot.image
+    spot = get_object_or_404(
+        TouristSpot.objects.select_related("category", "location"),
+        is_active=True,
+        location__province__iexact="Albay",
+        name_url=name_url
+    )
 
-    spot = next((s for s in spots if s.id == spot_id), None)
-    if not spot:
-        from django.http import HttpResponse
-        return HttpResponse(f"Spot '{name_url}' not found.", status=404)
+    image_map = _load_image_map()
+    spot.image = image_map.get(spot.id) or spot.image
 
     spot_data = {
         "name": spot.name,
@@ -272,13 +256,20 @@ def reported_spots_albay_detail(request, name_url):
         "map_url": getattr(spot, "map_embed", None),
         "rating": getattr(spot, "rating", None),
     }
-    more_spots = [s for s in spots if s.id != spot_id]
+
+    more_spots = TouristSpot.objects.filter(
+        is_active=True,
+        location__province__iexact="Albay"
+    ).exclude(id=spot.id)
+
+    # Patch images for other spots too
+    for s in more_spots:
+        s.image = image_map.get(s.id) or s.image
 
     return render(request, "tourism/reported_spots_albay_map.html", {
         "spot": spot_data,
         "more_spots": more_spots,
     })
-
 
 def reported_spots_camsur(request):
     query = request.GET.get('query', '')
