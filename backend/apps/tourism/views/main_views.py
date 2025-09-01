@@ -2,10 +2,8 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework import generics
 import csv
 from django.conf import settings
-from apps.tourism.models import TouristSpot, ReportedSpot
-
 from apps.tourism.models import (
-    TouristSpot, Category, Location, Review, Gallery, OperatingHour, TourismReportedSpotAlbay
+    TouristSpot, Category, Location, Review, Gallery, OperatingHour, ReportedSpot, TourismReportedSpotAlbay
 )
 from apps.tourism.serializers import (
     TouristSpotSerializer, CategorySerializer, LocationSerializer,
@@ -15,7 +13,6 @@ from apps.tourism.serializers import (
 from apps.tourism.filters import TouristSpotFilter
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.db.models import Q
-
 
 # ============================================================
 #                DRF GENERIC API VIEWS
@@ -153,7 +150,6 @@ def reported_spots(request):
 # ============================================================
 
 def _load_image_map():
-    """Utility: Load spot ID -> image path mapping from CSV."""
     image_map = {}
     csv_path = settings.BASE_DIR / 'static' / 'tourism_reported_spots_albay.csv'
 
@@ -181,7 +177,43 @@ def _load_image_map():
 
     return image_map
 
+def reported_spots_albay_map(request, spot_id):
+    # Use the same logic as carousel: get all active Albay spots
+    spots = TouristSpot.objects.filter(is_active=True, location__province__iexact="Albay").select_related("category")
+    image_map = _load_image_map()
 
+    # Set image for each spot as in the carousel
+    for spot in spots:
+        spot.image = image_map.get(spot.id) or spot.image
+
+    # Find the requested spot
+    spot = None
+    for s in spots:
+        if s.id == spot_id:
+            spot = s
+            break
+
+    if not spot:
+        from django.http import HttpResponse
+        return HttpResponse(f"Spot ID {spot_id} not found or not active in Albay.", status=404)
+
+    # Only send map_url and rating + basic info
+    spot_data = {
+        "name": spot.name,
+        "description": spot.description,
+        "image": spot.image,
+        "category": spot.category.name if hasattr(spot.category, "name") else spot.category_id,
+        "map_url": getattr(spot, "map_embed", None),
+        "rating": getattr(spot, "rating", None),
+    }
+
+    # The "more_spots" for the carousel/cards (excluding current)
+    more_spots = [s for s in spots if s.id != spot_id]
+
+    return render(request, "tourism/reported_spots_albay_map.html", {
+        "spot": spot_data,
+        "more_spots": more_spots,
+    })
 # ============================================================
 #   REPORTED SPOTS CAROUSEL + DETAIL (Albay, Camsur, Sorsogon)
 # ============================================================
@@ -190,7 +222,7 @@ def reported_spots_albay_carousel(request):
     # Filter by province='Albay' and active spots
     albay_spots = TouristSpot.objects.filter(
         Q(is_active=True),
-        province__iexact="Albay"
+        location__province__iexact="Albay"  # <-- FIXED!
     )
 
     # Load external image map (your existing helper)
@@ -204,21 +236,46 @@ def reported_spots_albay_carousel(request):
     })
 
 
-def reported_spots_albay_detail(request, pk: int):
-    spot = get_object_or_404(
-        TouristSpot.objects.select_related("location"),
-        pk=pk,
-        province__iexact="Albay",
-        is_active=True
-    )
+def reported_spots_albay_detail(request, name_url):
+    name_url_map = {
+        1: "KawaKawa",
+        2: "Masaraga",
+        3: "Tigbao",
+        4: "Languyon",
+        5: "LigaoMuseum",
+        6: "Bloom",
+        7: "Bernese",
+        8: "LigaoBnB",
+        9: "KuyangBnR",
+        10: "LaTerraza",
+        11: "PrimoBistro",
+        12: "BermanIceCream",
+    }
+    reverse_map = {v: k for k, v in name_url_map.items()}
+    spot_id = reverse_map.get(name_url)
+    spots = TouristSpot.objects.filter(is_active=True, location__province__iexact="Albay").select_related("category", "location")
+    image_map = _load_image_map()
+    for spot in spots:
+        spot.image = image_map.get(spot.id) or spot.image
 
-    more_spots = (TouristSpot.objects
-                  .filter(province__iexact="Albay", is_active=True)
-                  .exclude(pk=pk)
-                  .order_by("name")[:8])
+    spot = next((s for s in spots if s.id == spot_id), None)
+    if not spot:
+        from django.http import HttpResponse
+        return HttpResponse(f"Spot '{name_url}' not found.", status=404)
+
+    spot_data = {
+        "name": spot.name,
+        "description": spot.description,
+        "image": spot.image,
+        "category": spot.category.name if hasattr(spot.category, "name") else spot.category_id,
+        "location": spot.location.name if hasattr(spot.location, "name") else "",
+        "map_url": getattr(spot, "map_embed", None),
+        "rating": getattr(spot, "rating", None),
+    }
+    more_spots = [s for s in spots if s.id != spot_id]
 
     return render(request, "tourism/reported_spots_albay_map.html", {
-        "spot": spot,
+        "spot": spot_data,
         "more_spots": more_spots,
     })
 

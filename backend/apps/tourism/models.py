@@ -28,7 +28,7 @@ class TouristSpot(models.Model):
     location = models.ForeignKey(Location, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='tourist_spots/', default='tourist_spots/default.jpg')
     map_embed = models.TextField(blank=True, help_text="Google Maps embed link")
-    website_link = models.URLField(blank=True, help_text="Social media or website link")
+    website = models.URLField(blank=True, help_text="Social media or website link")
     is_featured = models.BooleanField(default=False)  # Show on homepage
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

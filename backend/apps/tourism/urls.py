@@ -63,8 +63,8 @@ urlpatterns = [
     path('reports/sorsogon/', reported_spots_sorsogon, name='reported_spots_sorsogon'),
     path("explore/", tourist_views.explore_spots, name="explore_spots"),
     path("saved/", tourist_views.saved_spots, name="saved_spots"),
-    path("reported-spots/albay/", main_views.reported_spots_albay_carousel, name="reported_spots_albay_carousel"),
-    path("reports/albay/<int:pk>/", main_views.reported_spots_albay_detail, name="reported_spot_albay_detail"),
+    path("reports/albay/<str:name>/", main_views.reported_spots_albay_detail, name="reported_spot_albay_detail"),
+    path("reports/albay/map/<int:spot_id>/", main_views.reported_spots_albay_map, name="reported_spots_albay_map"),
 
 ]
 
