@@ -1,7 +1,9 @@
 from django.shortcuts import render, get_object_or_404
 from rest_framework import generics
 import csv
+import os
 from django.conf import settings
+from django.http import JsonResponse, Http404
 from apps.tourism.models import (
     TouristSpot, Category, Location, Review, Gallery, OperatingHour, ReportedSpot, TourismReportedSpotAlbay
 )
@@ -13,8 +15,6 @@ from apps.tourism.serializers import (
 from apps.tourism.filters import TouristSpotFilter
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.db.models import Q
-from django.http import HttpResponse, JsonResponse
-from django.http import Http404
 
 # ============================================================
 #                DRF GENERIC API VIEWS
@@ -151,9 +151,9 @@ def reported_spots(request):
 #         REPORTED SPOTS BY PROVINCE (with CSV images)
 # ============================================================
 
-def _load_spot_data():
-    spots_dict = {}
-    csv_path = settings.BASE_DIR / 'static' / 'tourism_touristspot.csv'
+def _load_image_map():
+    image_map = {}
+    csv_path = os.path.join(settings.BASE_DIR, "shared", "static", "tourism_touristspot.csv")
 
     def clean_image_path(raw):
         if not raw:
@@ -169,53 +169,83 @@ def _load_spot_data():
         with open(csv_path, newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
-                spot_id = int(row['id'])
-                row['image'] = clean_image_path(row.get('image'))
-                row['rating'] = float(row['rating']) if row['rating'] else None
-                row['category'] = row['category_id']
-                spots_dict[spot_id] = row
+                img_path = clean_image_path(row.get('image'))
+                try:
+                    image_map[int(row['id'])] = img_path
+                except (KeyError, ValueError):
+                    continue
     except FileNotFoundError:
         pass
 
-    return spots_dict
+    return image_map
 
-def reported_spots_albay_map(request, spot_id):
-    # Use the same logic as carousel: get all active Albay spots
-    spots = TouristSpot.objects.filter(is_active=True, location__province__iexact="Albay").select_related("category")
-    image_map = _load_image_map()
+def reported_spots_albay_map(request):
+    # --- Search/filter functionality ---
+    query = request.GET.get('query', '').strip().lower()
+    static_folder = os.path.join(settings.BASE_DIR, "shared", "static")
+    spot_csv = os.path.join(static_folder, "tourism_touristspot.csv")
+    loc_csv = os.path.join(static_folder, "tourism_location.csv")
+    cat_csv = os.path.join(static_folder, "tourism_touristspot_category.csv")
 
-    # Set image for each spot as in the carousel
-    for spot in spots:
-        spot.image = image_map.get(spot.id) or spot.image
+    # --- Load locations ---
+    locations = {}
+    with open(loc_csv, encoding="utf-8") as locfile:
+        for row in csv.DictReader(locfile):
+            locations[row["id"]] = row
 
-    # Find the requested spot
-    spot = None
-    for s in spots:
-        if s.id == spot_id:
-            spot = s
-            break
+    # --- Load categories ---
+    categories = {}
+    with open(cat_csv, encoding="utf-8") as catfile:
+        for row in csv.DictReader(catfile):
+            categories[row["id"]] = row["name"]
 
-    if not spot:
-        from django.http import HttpResponse
-        return HttpResponse(f"Spot ID {spot_id} not found or not active in Albay.", status=404)
+    # --- Load all spots ---
+    albay_spots = []
+    all_categories = set()
+    with open(spot_csv, encoding="utf-8") as spotfile:
+        for row in csv.DictReader(spotfile):
+            loc = locations.get(row["location_id"])
+            if not loc or loc["province"].lower() != "albay":
+                continue
+            cat_name = categories.get(row["category_id"], "")
+            all_categories.add(cat_name)
 
-    # Only send map_url and rating + basic info
-    spot_data = {
-        "name": spot.name,
-        "description": spot.description,
-        "image": spot.image,
-        "category": spot.category.name if hasattr(spot.category, "name") else spot.category_id,
-        "map_url": getattr(spot, "map_embed", None),
-        "rating": getattr(spot, "rating", None),
-    }
+            # --- Search filter logic (matches name, desc, category, location) ---
+            if query:
+                match = (
+                    query in row["name"].lower() or
+                    query in row["description"].lower() or
+                    query in cat_name.lower() or
+                    query in loc["name"].lower() or
+                    query in loc["region"].lower() or
+                    query in loc["province"].lower()
+                )
+                if not match:
+                    continue
 
-    # The "more_spots" for the carousel/cards (excluding current)
-    more_spots = [s for s in spots if s.id != spot_id]
+            albay_spots.append({
+                "id": row["id"],
+                "name": row["name"],
+                "description": row["description"],
+                "image": row["image"],
+                "rating": row["rating"],
+                "address": row["address"],
+                "map_url": row["map_embed"],  # For modal display
+                "website": row["website"],
+                "name_url": row.get("name_url", ""),
+                "location": loc["name"],
+                "province": loc["province"],
+                "region": loc["region"],
+                "category": cat_name,
+            })
 
+    # --- Pass categories and spots to template for display ---
     return render(request, "tourism/reported_spots_albay_map.html", {
-        "spot": spot_data,
-        "more_spots": more_spots,
+        "albay_spots": albay_spots,
+        "query": request.GET.get('query', ''),
+        "categories": sorted(all_categories),
     })
+
 # ============================================================
 #   REPORTED SPOTS CAROUSEL + DETAIL (Albay, Camsur, Sorsogon)
 # ============================================================
@@ -224,7 +254,7 @@ def reported_spots_albay_carousel(request):
     # Filter by province='Albay' and active spots
     albay_spots = TouristSpot.objects.filter(
         Q(is_active=True),
-        location__province__iexact="Albay"  # <-- FIXED!
+        location__province__iexact="Albay"
     )
 
     # Load external image map (your existing helper)
@@ -239,30 +269,95 @@ def reported_spots_albay_carousel(request):
 
 
 def reported_spots_albay_detail(request, name_url):
-    spots_dict = _load_spot_data()
-
     try:
-        key = int(name_url)
-        if key not in spots_dict:
-            raise ValueError
-    except ValueError:
-        raise Http404("Invalid spot identifier")
+        spot = TouristSpot.objects.select_related("category", "location").get(
+            is_active=True,
+            location__province__iexact="Albay",
+            name_url=name_url
+        )
+        image_map = _load_image_map()
+        spot.image = image_map.get(spot.id) or spot.image
 
-    spot = spots_dict[key]
+        spot_data = {
+            "name": spot.name,
+            "description": spot.description,
+            "image": spot.image,
+            "name_url": spot.name_url,
+            "category": spot.category.name if hasattr(spot.category, "name") else spot.category_id,
+            "rating": getattr(spot, "rating", None),
+            "map_url": getattr(spot, "map_embed", None),
+            "address": f"{spot.location.name}, {spot.location.province}, {spot.location.region}",
+            "social_media_link": spot.website,
+        }
 
-    spot_data = {
-        "name": spot['name'],
-        "description": spot['description'],
-        "image": spot['image'],
-        "category": spot['category'],
-        "rating": spot['rating'],
-        "map_url": spot['map_embed'],
-        "address": spot['address'],
-        "social_media_link": spot['website'],
-    }
+        more_spots = TouristSpot.objects.filter(
+            is_active=True,
+            location__province__iexact="Albay"
+        ).exclude(id=spot.id)
+    except TouristSpot.DoesNotExist:
+        # Fallback: search CSV
+        static_folder = os.path.join(settings.BASE_DIR, "shared", "static")
+        spot_csv = os.path.join(static_folder, "tourism_touristspot.csv")
+        loc_csv = os.path.join(static_folder, "tourism_location.csv")
+        cat_csv = os.path.join(static_folder, "tourism_touristspot_category.csv")
 
-    more_spots = [spots_dict[k] for k in spots_dict if k != key]
+        locations = {}
+        with open(loc_csv, encoding="utf-8") as locfile:
+            for row in csv.DictReader(locfile):
+                locations[row["id"]] = row
 
+        categories = {}
+        with open(cat_csv, encoding="utf-8") as catfile:
+            for row in csv.DictReader(catfile):
+                categories[row["id"]] = row["name"]
+
+        spot_data = None
+        with open(spot_csv, encoding="utf-8") as spotfile:
+            for row in csv.DictReader(spotfile):
+                if row["name_url"] == name_url:
+                    loc = locations.get(row["location_id"])
+                    if not loc or loc["province"].lower() != "albay":
+                        continue
+                    cat_name = categories.get(row["category_id"], "")
+                    spot_data = {
+                        "name": row["name"],
+                        "description": row["description"],
+                        "image": row["image"],
+                        "name_url": row["name_url"],
+                        "category": cat_name,
+                        "rating": row["rating"],
+                        "map_url": row["map_embed"],
+                        "address": row["address"],
+                        "social_media_link": row["website"],
+                    }
+                    break
+
+        # Get more spots for sidebar/carousel (from CSV)
+        more_spots = []
+        if spot_data:
+            with open(spot_csv, encoding="utf-8") as spotfile:
+                for row in csv.DictReader(spotfile):
+                    loc = locations.get(row["location_id"])
+                    if not loc or loc["province"].lower() != "albay":
+                        continue
+                    if row["name_url"] != name_url:
+                        cat_name = categories.get(row["category_id"], "")
+                        more_spots.append({
+                            "name": row["name"],
+                            "description": row["description"],
+                            "image": row["image"],
+                            "name_url": row["name_url"],
+                            "category": cat_name,
+                            "rating": row["rating"],
+                            "map_url": row["map_embed"],
+                            "address": row["address"],
+                            "social_media_link": row["website"],
+                        })
+
+        if not spot_data:
+            raise Http404("No TouristSpot matches the given query.")
+
+    # Render or return JSON
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse(spot_data)
     else:
@@ -319,19 +414,21 @@ def reported_spots_sorsogon(request):
 
 def reported_spots_albay(request):
     query = request.GET.get('query', '')
-    spots_dict = _load_spot_data()
-    albay_spots = list(spots_dict.values())
-    spots = albay_spots  # for search
+    spots = TouristSpot.objects.filter(is_active=True)
     if query:
-        spots = [s for s in albay_spots if
-                 query.lower() in s['name'].lower() or
-                 query.lower() in s['description'].lower() or
-                 query.lower() in str(s['category']) or
-                 query.lower() in s['address'].lower()  # approximate search without ORM
-                ]
-    categories = list(set(s['category'] for s in albay_spots))
+        spots = (spots.filter(name__icontains=query) |
+                 spots.filter(description__icontains=query) |
+                 spots.filter(category__name__icontains=query) |
+                 spots.filter(location__name__icontains=query) |
+                 spots.filter(location__region__icontains=query) |
+                 spots.filter(location__province__iexact='Albay'))
+    categories = Category.objects.values_list('name', flat=True).distinct()
+    albay_spots = TouristSpot.objects.filter(location__province__iexact='Albay', is_active=True)
+    image_map = _load_image_map()
+    for s in spots: s.image = image_map.get(s.id)
+    for s in albay_spots: s.image = image_map.get(s.id)
     return render(request, 'tourism/reported_spots_albay.html', {
-        'spots': spots,
+        'spots': spots.distinct(),
         'query': query,
         'categories': categories,
         'albay_spots': albay_spots,

@@ -116,7 +116,7 @@ class TourismReportedSpotAlbay(models.Model):
 
     class Meta:
         app_label = "tourism"
-        db_table = "tourism_reported_spots_albay"
+        db_table = "tourism_touristspot"
         managed = False  # Django won’t try to create/migrate this table
         verbose_name = "Tourism Reported Spot"
         verbose_name_plural = "Tourism Reported Spots"

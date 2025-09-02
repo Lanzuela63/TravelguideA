@@ -25,7 +25,7 @@ def build_spot(row, province_folder):
     name = row.get("name", "").strip()
 
     # Try map_src first, then embed_link
-    raw_map = row.get("map_src", "").strip() or row.get("embed_link", "").strip()
+    raw_map = row.get("map_src", "").strip() or row.get("map_url", "").strip()
 
     return {
         "id": row.get("id", "").strip(),
@@ -51,7 +51,7 @@ def saved_spots(request):
 
 def reported_spots_albay_carousel(request):
     spots = []
-    csv_path = os.path.join(settings.BASE_DIR, "shared", "static", "tourism_reported_spots_albay.csv")
+    csv_path = os.path.join(settings.BASE_DIR, "shared", "static", "tourism_touristspot.csv")
 
     with open(csv_path, newline='', encoding="utf-8") as csvfile:
         reader = csv.DictReader(csvfile)
@@ -100,7 +100,7 @@ def reported_spots_albay_map(request, spot_id):
     """
     Expanded view for a single Albay tourist spot with map included.
     """
-    csv_path = os.path.join(settings.BASE_DIR, "shared", "static", "tourism_reported_spots_albay.csv")
+    csv_path = os.path.join(settings.BASE_DIR, "shared", "static", "tourism_touristspot.csv")
     spot = None
 
     with open(csv_path, newline='', encoding="utf-8") as csvfile:

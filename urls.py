@@ -152,7 +152,7 @@ def reported_spots(request):
 def _load_image_map():
     """Utility: Load spot ID -> image path mapping from CSV."""
     image_map = {}
-    csv_path = settings.BASE_DIR / 'static' / 'tourism_reported_spots_albay.csv'
+    csv_path = settings.BASE_DIR / 'static' / 'tourism_touristspot.csv'
 
     def clean_image_path(raw):
         if not raw:
@@ -206,7 +206,6 @@ def reported_spots_albay_map(request, spot_id):
         "category": spot.category.name if hasattr(spot.category, "name") else spot.category_id,
         "location": spot.location.name if hasattr(spot.location, "name") else "",
         "rating": getattr(spot, "rating", None),
-        "embed_link": getattr(spot, "embed_link", None) or getattr(spot, "map_embed", None),
         "map_url": getattr(spot, "map_embed", None),
         "address": getattr(spot, "address", ""),
         "website": getattr(spot, "website", None),

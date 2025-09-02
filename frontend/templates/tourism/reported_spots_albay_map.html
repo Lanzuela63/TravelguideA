@@ -34,7 +34,7 @@
                         <p class="card-text">{{ spot.description|truncatewords:20 }}</p>
                         <p><strong>Category:</strong> {{ spot.category }}</p>
                         <p><strong>Rating:</strong> ⭐ {{ spot.rating }}</p>
-                        <button class="btn btn-primary view-map" data-spot-id="{{ spot.id }}" data-bs-toggle="modal" data-bs-target="#spotModal">View Map</button>
+                        <button class="btn btn-primary view-map" data-spot-name-url="{{ spot.name_url }}" data-bs-toggle="modal" data-bs-target="#spotModal">View Map</button>
                     </div>
                 </div>
             </div>
@@ -73,9 +73,9 @@
     document.querySelectorAll('.view-map').forEach(button => {
         button.addEventListener('click', () => {
             const spotId = button.dataset.spotId;
-            fetch(`{% url 'tourism:reported_spot_albay_detail' 0 %}`.replace('/0/', `/${spotId}/`), {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
+            fetch(`{% url 'tourism:reported_spot_albay_detail' 'KawaKawa' %}`.replace('KawaKawa', spot.name_url), {
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+})
             .then(response => response.json())
             .then(data => {
                 document.getElementById('spotModalLabel').textContent = data.name;
