@@ -227,16 +227,14 @@ def reported_spots_albay_map(request):
                 "id": row["id"],
                 "name": row["name"],
                 "description": row["description"],
-                "image": row["image"],
+                "image": row["image"],  # Use for header image
                 "rating": row["rating"],
                 "address": row["address"],
-                "map_url": row["map_embed"],  # For modal display
-                "website": row["website"],
-                "name_url": row.get("name_url", ""),
+                "map_embed": row["map_embed"],  # Use for embedded map (iframe HTML)
+                "category": cat_name,
                 "location": loc["name"],
                 "province": loc["province"],
                 "region": loc["region"],
-                "category": cat_name,
             })
 
     # --- Pass categories and spots to template for display ---
@@ -269,7 +267,10 @@ def reported_spots_albay_carousel(request):
 
 
 def reported_spots_albay_detail(request, name_url):
+    spot_data = None
+    more_spots = []
     try:
+        # Try database
         spot = TouristSpot.objects.select_related("category", "location").get(
             is_active=True,
             location__province__iexact="Albay",
@@ -294,7 +295,7 @@ def reported_spots_albay_detail(request, name_url):
             is_active=True,
             location__province__iexact="Albay"
         ).exclude(id=spot.id)
-    except TouristSpot.DoesNotExist:
+    except Exception:
         # Fallback: search CSV
         static_folder = os.path.join(settings.BASE_DIR, "shared", "static")
         spot_csv = os.path.join(static_folder, "tourism_touristspot.csv")
@@ -302,47 +303,31 @@ def reported_spots_albay_detail(request, name_url):
         cat_csv = os.path.join(static_folder, "tourism_touristspot_category.csv")
 
         locations = {}
-        with open(loc_csv, encoding="utf-8") as locfile:
-            for row in csv.DictReader(locfile):
-                locations[row["id"]] = row
+        try:
+            with open(loc_csv, encoding="utf-8") as locfile:
+                for row in csv.DictReader(locfile):
+                    locations[row["id"]] = row
+        except Exception as e:
+            locations = {}
 
         categories = {}
-        with open(cat_csv, encoding="utf-8") as catfile:
-            for row in csv.DictReader(catfile):
-                categories[row["id"]] = row["name"]
+        try:
+            with open(cat_csv, encoding="utf-8") as catfile:
+                for row in csv.DictReader(catfile):
+                    categories[row["id"]] = row["name"]
+        except Exception as e:
+            categories = {}
 
         spot_data = None
-        with open(spot_csv, encoding="utf-8") as spotfile:
-            for row in csv.DictReader(spotfile):
-                if row["name_url"] == name_url:
-                    loc = locations.get(row["location_id"])
-                    if not loc or loc["province"].lower() != "albay":
-                        continue
-                    cat_name = categories.get(row["category_id"], "")
-                    spot_data = {
-                        "name": row["name"],
-                        "description": row["description"],
-                        "image": row["image"],
-                        "name_url": row["name_url"],
-                        "category": cat_name,
-                        "rating": row["rating"],
-                        "map_url": row["map_embed"],
-                        "address": row["address"],
-                        "social_media_link": row["website"],
-                    }
-                    break
-
-        # Get more spots for sidebar/carousel (from CSV)
-        more_spots = []
-        if spot_data:
+        try:
             with open(spot_csv, encoding="utf-8") as spotfile:
                 for row in csv.DictReader(spotfile):
-                    loc = locations.get(row["location_id"])
-                    if not loc or loc["province"].lower() != "albay":
-                        continue
-                    if row["name_url"] != name_url:
+                    if row["name_url"] == name_url:
+                        loc = locations.get(row["location_id"])
+                        if not loc or loc["province"].lower() != "albay":
+                            continue
                         cat_name = categories.get(row["category_id"], "")
-                        more_spots.append({
+                        spot_data = {
                             "name": row["name"],
                             "description": row["description"],
                             "image": row["image"],
@@ -352,7 +337,35 @@ def reported_spots_albay_detail(request, name_url):
                             "map_url": row["map_embed"],
                             "address": row["address"],
                             "social_media_link": row["website"],
-                        })
+                        }
+                        break
+        except Exception as e:
+            spot_data = None
+
+        # Get more spots for sidebar/carousel (from CSV)
+        more_spots = []
+        if spot_data:
+            try:
+                with open(spot_csv, encoding="utf-8") as spotfile:
+                    for row in csv.DictReader(spotfile):
+                        loc = locations.get(row["location_id"])
+                        if not loc or loc["province"].lower() != "albay":
+                            continue
+                        if row["name_url"] != name_url:
+                            cat_name = categories.get(row["category_id"], "")
+                            more_spots.append({
+                                "name": row["name"],
+                                "description": row["description"],
+                                "image": row["image"],
+                                "name_url": row["name_url"],
+                                "category": cat_name,
+                                "rating": row["rating"],
+                                "map_url": row["map_embed"],
+                                "address": row["address"],
+                                "social_media_link": row["website"],
+                            })
+            except Exception as e:
+                more_spots = []
 
         if not spot_data:
             raise Http404("No TouristSpot matches the given query.")

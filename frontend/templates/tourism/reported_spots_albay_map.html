@@ -3,97 +3,31 @@
 {% block content %}
 
 <div class="container my-5">
-    <!-- Search Form -->
-    <form method="get" class="mb-4">
-        <div class="input-group">
-            <input type="text" name="query" value="{{ query }}" class="form-control" placeholder="Search spots...">
-            <button type="submit" class="btn btn-primary">Search</button>
+    {% for spot in albay_spots %}
+        <!-- SPOT HEADER IMAGE -->
+        <div class="mb-4">
+            {% if spot.image %}
+                <img src="{% static spot.image %}" class="img-fluid w-100 mb-3" alt="{{ spot.name }}" style="max-height: 400px; object-fit: cover;">
+            {% endif %}
+            <!-- SPOT NAME and RATING -->
+            <div class="d-flex align-items-center justify-content-between">
+                <h2 class="mb-0">{{ spot.name }}</h2>
+                <div style="font-size: 2rem; color: gold;">
+                    {{ spot.rating }}
+                    <span style="font-size: 2rem;">&#9733;</span>
+                </div>
+            </div>
+            <!-- DESCRIPTION -->
+            <p class="lead">{{ spot.description }}</p>
+            <!-- ADDRESS -->
+            <p style="font-size: 1.1rem;"><strong>{{ spot.address }}</strong></p>
+            <!-- EMBEDDED MAP -->
+            <div class="mb-4">
+                {{ spot.map_embed|safe }}
+            </div>
+            <hr>
         </div>
-    </form>
-
-    <!-- Categories -->
-    <div class="mb-4">
-        <h4>Categories</h4>
-        <ul class="list-inline">
-            {% for cat in categories %}
-                <li class="list-inline-item"><span class="badge bg-secondary">{{ cat }}</span></li>
-            {% endfor %}
-        </ul>
-    </div>
-
-    <!-- Spots List -->
-    <div class="row">
-        {% for spot in albay_spots %}
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 shadow">
-                    {% if spot.image %}
-                        <img src="{% static spot.image %}" class="card-img-top" alt="{{ spot.name }}">
-                    {% endif %}
-                    <div class="card-body">
-                        <h5 class="card-title">{{ spot.name }}</h5>
-                        <p class="card-text">{{ spot.description|truncatewords:20 }}</p>
-                        <p><strong>Category:</strong> {{ spot.category }}</p>
-                        <p><strong>Rating:</strong> ⭐ {{ spot.rating }}</p>
-                        <button class="btn btn-primary view-map" data-spot-name-url="{{ spot.name_url }}" data-bs-toggle="modal" data-bs-target="#spotModal">View Map</button>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
+    {% endfor %}
 </div>
-
-<!-- Modal (appears in front, matches screenshot minus header/footer) -->
-<div class="modal fade" id="spotModal" tabindex="-1" aria-labelledby="spotModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="spotModalLabel"></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <img id="modalImage" src="" class="card-img-top img-fluid mb-3" alt="">
-                <p id="modalDescription"></p>
-                <p><strong>Category:</strong> <span id="modalCategory"></span></p>
-                <p><strong>Rating:</strong> <span id="modalRating"></span></p>
-                <p><strong>Address:</strong> <span id="modalAddress"></span></p>
-                <h4>Location Map</h4>
-                <div class="ratio ratio-16x9 mb-3">
-                    <iframe id="modalMapIframe" src="" width="100%" height="400" style="border:0;" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-                </div>
-                <div id="modalSocialLinks">
-                    <strong>Website:</strong>
-                    <a id="socialLink" href="#" target="_blank" style="display: none;">Visit</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    document.querySelectorAll('.view-map').forEach(button => {
-        button.addEventListener('click', () => {
-            const spotId = button.dataset.spotId;
-            fetch(`{% url 'tourism:reported_spot_albay_detail' 'KawaKawa' %}`.replace('KawaKawa', spot.name_url), {
-    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-})
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('spotModalLabel').textContent = data.name;
-                document.getElementById('modalImage').src = `{% static '' %}${data.image}`;  // Prefix static
-                document.getElementById('modalDescription').textContent = data.description;
-                document.getElementById('modalCategory').textContent = data.category;
-                document.getElementById('modalRating').textContent = `⭐ ${data.rating || 'N/A'}`;
-                document.getElementById('modalAddress').textContent = data.address;
-                document.getElementById('modalMapIframe').src = data.map_url || '';
-
-                // Website link
-                const socialLink = document.getElementById('socialLink');
-                socialLink.href = data.social_media_link;
-                socialLink.style.display = data.social_media_link ? 'inline-block' : 'none';
-            })
-            .catch(error => console.error('Error:', error));
-        });
-    });
-</script>
 
 {% endblock %}
