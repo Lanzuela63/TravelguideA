@@ -1,33 +1,41 @@
 {% extends "base.html" %}
 {% load static %}
-{% block content %}
 
 <div class="container my-5">
-    {% for spot in albay_spots %}
-        <!-- SPOT HEADER IMAGE -->
-        <div class="mb-4">
-            {% if spot.image %}
-                <img src="{% static spot.image %}" class="img-fluid w-100 mb-3" alt="{{ spot.name }}" style="max-height: 400px; object-fit: cover;">
-            {% endif %}
-            <!-- SPOT NAME and RATING -->
-            <div class="d-flex align-items-center justify-content-between">
-                <h2 class="mb-0">{{ spot.name }}</h2>
-                <div style="font-size: 2rem; color: gold;">
-                    {{ spot.rating }}
-                    <span style="font-size: 2rem;">&#9733;</span>
-                </div>
-            </div>
-            <!-- DESCRIPTION -->
-            <p class="lead">{{ spot.description }}</p>
-            <!-- ADDRESS -->
-            <p style="font-size: 1.1rem;"><strong>{{ spot.address }}</strong></p>
-            <!-- EMBEDDED MAP -->
-            <div class="mb-4">
-                {{ spot.map_embed|safe }}
-            </div>
-            <hr>
-        </div>
-    {% endfor %}
+  {% if spot %}
+    <div class="mb-4 text-center">
+      {% if spot.image %}
+        <img src="{% static spot.image %}" alt="{{ spot.name }}" class="img-fluid" style="max-width:700px; width:100%; max-height:440px; object-fit:cover; border-radius:18px;">
+      {% else %}
+        <img src="{% static 'images/reported_spots/albay/default.jpg' %}" alt="No image" class="img-fluid" style="max-width:700px; width:100%; max-height:440px; object-fit:cover; border-radius:18px;">
+      {% endif %}
+    </div>
+    <div class="mb-2 px-2" style="max-width:700px;margin:auto;">
+      <h2 class="fw-bold mb-1">{{ spot.name }}</h2>
+      <div class="mb-2 text-muted" style="font-size:1.08em;">
+        <span class="me-3"><b>Category:</b> {{ spot.category|default:"Uncategorized" }}</span>
+        <span style="color:#FFD700;"><b>{{ spot.rating|default:"No rating" }}</b> <span class="star">&#9733;</span></span>
+      </div>
+      <p style="font-size:1.08em; color:#444;">{{ spot.description }}</p>
+      <hr>
+      <div class="mb-2" style="font-size:1.08em;">
+        <div class="mb-1"><b>Address:</b> {{ spot.address }}</div>
+        {% if spot.website %}
+          <div class="mb-1"><b>Website:</b> <a href="{{ spot.website }}" target="_blank">{{ spot.website }}</a></div>
+        {% endif %}
+      </div>
+      {% if spot.map_embed %}
+        <div class="mb-4 mt-2">{{ spot.map_embed|safe }}</div>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="alert alert-warning">No spot selected.</div>
+  {% endif %}
 </div>
-
-{% endblock %}
+<style>
+.star {
+  margin-left: 3px;
+  font-size: 1.15em;
+  vertical-align: middle;
+}
+</style>
