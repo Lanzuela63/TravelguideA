@@ -163,6 +163,9 @@ def _load_image_map():
         idx = fixed.find(marker)
         if idx >= 0:
             fixed = fixed[idx + len(marker):]
+        # ✅ Prevent double "images/" prefix
+        if fixed.startswith("images/"):
+            return fixed
         return f"images/{fixed.lstrip('/')}"
 
     try:
@@ -178,6 +181,7 @@ def _load_image_map():
         pass
 
     return image_map
+
 
 def load_csv_dict(file_path, key_field):
     """Helper to load a csv into a dict by key_field."""
@@ -247,7 +251,7 @@ def reported_spots_albay_map(request, name_url=None):
                 "category": categories.get(row["category_id"], ""),
                 "address": row.get("address") or f"{loc.get('name', '')}, {loc.get('province', '')}, {loc.get('region', '')}",
                 "website": row.get("website", ""),
-                "map_embed": row.get("map_embed", ""),
+                "map_embed": clean_map_src(row.get("map_embed", "")),
             }
             break
 

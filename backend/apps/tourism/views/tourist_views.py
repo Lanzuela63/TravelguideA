@@ -32,7 +32,7 @@ def build_spot(row, province, locations=None, categories=None):
         "image": row.get("image"),
         "rating": row.get("rating"),
         "address": row.get("address"),
-        "map_embed": row.get("map_embed"),
+        "map_embed": clean_map_src(row.get("map_embed")),
         "category": category.get("name") if category else "",
         "category_id": row.get("category_id"),
         "location": location.get("name") if location else "",
