@@ -3,8 +3,8 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h1 class="text-center">Reported Spots</h1>
-    <p class="text-center">List of flagged or reported tourist spots.</p>
+    <h1 class="text-center">Spots in Albay</h1>
+    <br></br>
 
     <!-- Search Bar -->
     <form method="get" class="d-flex justify-content-center align-items-center mb-3" style="gap: 1rem;">
@@ -14,15 +14,13 @@
 
     <!-- Horizontal Scrollable Filter Bar -->
     <div class="category-carousel mb-4">
-        <a href="?" class="filter-btn {% if not query or query == 'All' %}active{% endif %}">All</a>
-        <a href="?query=Inn" class="filter-btn {% if query == 'Inn' %}active{% endif %}">Inn</a>
-        <a href="?query=Restaurant" class="filter-btn {% if query == 'Restaurant' %}active{% endif %}">Restaurant</a>
-        <a href="?query=Resort" class="filter-btn {% if query == 'Resort' %}active{% endif %}">Resort</a>
-        <a href="?query=Beach" class="filter-btn {% if query == 'Beach' %}active{% endif %}">Beach</a>
-        <a href="?query=Museum" class="filter-btn {% if query == 'Museum' %}active{% endif %}">Museum</a>
-        <a href="?query=Scenic Nature" class="filter-btn {% if query == 'Scenic Nature' %}active{% endif %}">Scenic Nature</a>
-        <a href="?query=Nature Trekking" class="filter-btn {% if query == 'Nature Trekking' %}active{% endif %}">Nature Trekking</a>
-    </div>
+    <a href="?" class="filter-btn {% if not query or query == 'All' %}active{% endif %}">All</a>
+    {% for cat in categories %}
+        <a href="?query={{ cat.name }}" class="filter-btn {% if query == cat.name %}active{% endif %}">
+            {{ cat.name }}
+        </a>
+    {% endfor %}
+</div>
 </div>
 
 <!-- CSS for carousel/filter bar -->

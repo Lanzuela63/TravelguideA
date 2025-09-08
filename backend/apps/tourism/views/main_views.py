@@ -139,7 +139,7 @@ def reported_spots(request):
                  spots.filter(location__name__icontains=query) |
                  spots.filter(location__region__icontains=query) |
                  spots.filter(location__province__icontains=query))
-    categories = Category.objects.values_list('name', flat=True).distinct()
+    categories = Category.objects.all().order_by("id")
     return render(request, 'tourism/reported_spots_albay.html', {
         'spots': spots.distinct(),
         'query': query,
@@ -308,7 +308,7 @@ def reported_spots_albay_detail(request, name_url):
             "name_url": spot.name_url,
             "category": spot.category.name if hasattr(spot.category, "name") else spot.category_id,
             "rating": getattr(spot, "rating", None),
-            "map_url": getattr(spot, "map_embed", None),
+            "map_embed": getattr(spot, "map_embed", None),
             "address": f"{spot.location.name}, {spot.location.province}, {spot.location.region}",
             "social_media_link": spot.website,
         }
@@ -417,25 +417,28 @@ def reported_spots_sorsogon(request):
 
 def reported_spots_albay(request):
     query = request.GET.get('query', '')
-    spots = TouristSpot.objects.filter(is_active=True)
-    if query:
-        spots = (spots.filter(name__icontains=query) |
-                 spots.filter(description__icontains=query) |
-                 spots.filter(category__name__icontains=query) |
-                 spots.filter(location__name__icontains=query) |
-                 spots.filter(location__region__icontains=query) |
-                 spots.filter(location__province__iexact='Albay'))
-    categories = Category.objects.values_list('name', flat=True).distinct()
-    albay_spots = TouristSpot.objects.filter(location__province__iexact='Albay', is_active=True)
+    spots = TouristSpot.objects.filter(is_active=True, location__province__iexact='Albay')
+
+    if query and query.lower() != "all":
+        spots = spots.filter(
+            Q(name__icontains=query) |
+            Q(description__icontains=query) |
+            Q(location__name__icontains=query) |
+            Q(category__name__icontains=query)  # ✅ category join
+        )
+
+    categories = Category.objects.all().order_by("id")
+
     image_map = _load_image_map()
-    for s in spots: s.image = image_map.get(s.id)
-    for s in albay_spots: s.image = image_map.get(s.id)
+    for s in spots:
+        s.image = image_map.get(s.id) or s.image
+
     return render(request, 'tourism/reported_spots_albay.html', {
         'spots': spots.distinct(),
         'query': query,
         'categories': categories,
-        'albay_spots': albay_spots,
     })
+
 
 
 # ============================================================
