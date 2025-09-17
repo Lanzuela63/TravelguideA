@@ -1,10 +1,206 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% load static %}
 
-</body>
-</html>
+<div class="carousel-container">
+  {% for spot in spots %}
+    <div class="carousel-card" id="spot-{{ spot.id }}">
+      <div class="reported-spot-image">
+        {% if spot.image %}
+          <img src="{% static spot.image %}" alt="{{ spot.name }}">
+        {% else %}
+          <img src="{% static 'images/reported_spots/camsur/default.jpg' %}" alt="No image">
+        {% endif %}
+      </div>
+      <div class="reported-spot-info">
+        <h3>{{ spot.name }}</h3>
+        <p>{{ spot.description|truncatewords:20 }}</p>
+        <div class="category-rating-row">
+          <span class="category-name">
+            {{ spot.category|default:"Uncategorized" }}
+          </span>
+          <span class="spot-rating">
+            {{ spot.rating|default:"No rating" }}
+            <span class="star">&#9733;</span>
+          </span>
+        </div>
+      </div>
+      <a href="{% url 'tourism:reported_spot_camsur_detail' spot.name_url %}"
+         class="stretched-link"
+         style="text-decoration:none; color:inherit;"></a>
+    </div>
+  {% endfor %}
+
+  <button class="carousel-btn left-btn">&#10094;</button>
+  <button class="carousel-btn right-btn">&#10095;</button>
+</div>
+
+
+<style>
+.carousel-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  perspective: 1500px;
+  width: 100%;
+  height: 500px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.carousel-card {
+  position: absolute;
+  width: 320px;
+  height: 420px;
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  transform-style: preserve-3d;
+  transition: transform 0.8s ease, opacity 0.8s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.carousel-card .stretched-link {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+}
+
+.reported-spot-image {
+  width: 100%;
+  height: 50%;
+  background: #f4f4f4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.reported-spot-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.reported-spot-info {
+  padding: 15px;
+  text-align: center;
+  height: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+}
+
+.reported-spot-info h3 {
+  font-size: 1.2em;
+  margin: 10px 0;
+}
+
+.reported-spot-info p {
+  font-size: 0.9em;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+/* Category + Rating row */
+.category-rating-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1em;
+  margin-top: auto;
+}
+
+.category-name {
+  font-weight: bold;
+}
+
+.spot-rating {
+  color: #FFD700;
+  font-weight: bold;
+}
+
+.star {
+  margin-left: 3px;
+}
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 2rem;
+  padding: 8px 14px;
+  cursor: pointer;
+  z-index: 10;
+  transition: background 0.3s;
+}
+.carousel-btn:hover { background: rgba(0, 0, 0, 0.8); }
+.left-btn { left: 10px; }
+.right-btn { right: 10px; }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const cards = document.querySelectorAll(".carousel-card");
+  const prevBtn = document.querySelector(".left-btn");
+  const nextBtn = document.querySelector(".right-btn");
+  let current = 0;
+  let autoRotate;
+
+  function updateCarousel() {
+    cards.forEach((card, i) => {
+      const offset = (i - current + cards.length) % cards.length;
+      if (offset === 0) {
+        card.style.transform = "translateX(0) scale(1)";
+        card.style.opacity = "1";
+        card.style.zIndex = "3";
+      } else if (offset === 1 || offset === cards.length - 1) {
+        card.style.transform = `translateX(${offset === 1 ? 250 : -250}px) scale(0.8) rotateY(${offset === 1 ? -20 : 20}deg)`;
+        card.style.opacity = "0.7";
+        card.style.zIndex = "2";
+      } else {
+        card.style.transform = "translateX(0) scale(0.6)";
+        card.style.opacity = "0";
+        card.style.zIndex = "1";
+      }
+    });
+  }
+
+  function nextCard() {
+    current = (current + 1) % cards.length;
+    updateCarousel();
+  }
+
+  function prevCard() {
+    current = (current - 1 + cards.length) % cards.length;
+    updateCarousel();
+  }
+
+  prevBtn.addEventListener("click", () => {
+    prevCard();
+    resetAutoRotate();
+  });
+
+  nextBtn.addEventListener("click", () => {
+    nextCard();
+    resetAutoRotate();
+  });
+
+  function startAutoRotate() {
+    autoRotate = setInterval(nextCard, 4000);
+  }
+  function resetAutoRotate() {
+    clearInterval(autoRotate);
+    startAutoRotate();
+  }
+
+  updateCarousel();
+  startAutoRotate();
+});
+</script>

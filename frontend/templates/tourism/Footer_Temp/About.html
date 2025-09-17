@@ -2,9 +2,131 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Thesis Project</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f9f9f9;
+            color: #333;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: auto;
+            padding: 40px 0;
+        }
+
+        h1, h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .team-section {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .team-member {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            width: 300px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .team-member img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 15px;
+        }
+
+        .values {
+            margin-top: 50px;
+        }
+
+        .values ul {
+            list-style: none;
+            padding: 0;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        .values ul li {
+            background: #fff;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .contact {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .contact a {
+            color: #0073e6;
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
+
+    <div class="container">
+        <h1>About Us</h1>
+        <p style="text-align:center;">
+            We are a team of BSIT students from <b>STI College Legazpi</b> committed to building
+            innovative and user-focused technology solutions. This thesis project is our way of applying
+            classroom knowledge into a real-world system.
+        </p>
+
+        <h2>Our Team</h2>
+        <div class="team-section">
+            <div class="team-member">
+                <img src="{% static 'images/base/Aringay.jpg' %}" alt="Louie Aringay">
+                <h3>Louie Aringay</h3>
+                <p>Leader – BSIT 401-C</p>
+            </div>
+
+            <div class="team-member">
+                <img src="{% static 'images/base/Lanzuela.jpg' %}" alt="William Lanzuela">
+                <h3>William Lanzuela</h3>
+                <p>BSIT 401-B</p>
+            </div>
+
+            <div class="team-member">
+                <img src="{% static 'images/base/Arimado.jpg' %}" alt="Martin Dave Arimado">
+                <h3>Martin Dave Arimado</h3>
+                <p>BSIT 401-A</p>
+            </div>
+        </div>
+
+        <div class="values">
+            <h2>Our Values</h2>
+            <ul>
+                <li><b>Innovation</b> – We design systems that bring fresh ideas and solutions to real challenges.</li>
+                <li><b>Collaboration</b> – Teamwork and communication are at the heart of our success.</li>
+                <li><b>Excellence</b> – We aim for quality that reflects both academic and professional standards.</li>
+                <li><b>Integrity</b> – We practice honesty, responsibility, and accountability in our work.</li>
+            </ul>
+        </div>
+
+        <div class="contact">
+            <h2>Contact Us</h2>
+            <p>Email: <a href="mailto:Lanzuela63@gmail.com">Lanzuela63@gmail.com</a></p>
+        </div>
+    </div>
 
 </body>
 </html>

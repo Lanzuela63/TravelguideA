@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center">Spots in Camarines Sur</h1>
+    <br></br>
+
+    <!-- Search Bar -->
+    <form method="get" class="d-flex justify-content-center align-items-center mb-3" style="gap: 1rem;">
+        <input type="text" name="query" class="form-control" style="max-width:400px;" placeholder="Search spots..." value="{{ query|default:'' }}">
+        <button type="submit" class="btn btn-success search-btn">Search</button>
+    </form>
+
+    <!-- Horizontal Scrollable Filter Bar -->
+    <div class="category-carousel mb-4">
+    <a href="?" class="filter-btn {% if not query or query == 'All' %}active{% endif %}">All</a>
+    {% for cat in categories %}
+        <a href="?query={{ cat.name }}" class="filter-btn {% if query == cat.name %}active{% endif %}">
+            {{ cat.name }}
+        </a>
+    {% endfor %}
+</div>
+</div>
+
+<!-- CSS for carousel/filter bar -->
+<style>
+    .category-carousel {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #4caf50 #eee;
+        gap: 0.5rem;
+        padding-bottom: 8px;
+        -webkit-overflow-scrolling: touch;
+    }
+    .filter-btn {
+        flex: 0 0 auto;
+        padding: 0.5rem 1.2rem;
+        background: #fff;
+        border: 1px solid #bbb;
+        border-radius: 20px;
+        color: #4caf50;
+        font-weight: 500;
+        transition: background 0.2s, color 0.2s;
+        text-align: center;
+        margin-right: 0.5rem;
+        margin-bottom: 0;
+        cursor: pointer;
+        text-decoration: none;
+        outline: none;
+    }
+    .filter-btn.active, .filter-btn:focus {
+        background: #4caf50;
+        color: #fff;
+        border-color: #4caf50;
+    }
+    .search-btn {
+        background: #4caf50 !important;
+        border-color: #4caf50 !important;
+        color: #fff !important;
+    }
+    .category-carousel::-webkit-scrollbar {
+        height: 6px;
+    }
+    .category-carousel::-webkit-scrollbar-thumb {
+        background: #4caf50;
+        border-radius: 6px;
+    }
+    .category-carousel::-webkit-scrollbar-track {
+        background: #eee;
+        border-radius: 6px;
+    }
+</style>
+    {% include "tourism/reported_spots_camsur_carousel.html" %}
+{% endblock %}

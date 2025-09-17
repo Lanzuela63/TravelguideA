@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+  {% if spot %}
+    <div class="mb-4 text-center">
+      {% if spot.image %}
+        <img src="{% static spot.image %}" alt="{{ spot.name }}"
+             class="img-fluid"
+             style="max-width:1920px; width:100%; max-height:1080px; object-fit:cover; border-radius:18px;">
+      {% else %}
+        <img src="{% static 'images/reported_spots/camsur/default.jpg' %}" alt="No image"
+             class="img-fluid"
+             style="max-width:700px; width:100%; max-height:440px; object-fit:cover; border-radius:18px;">
+      {% endif %}
+    </div>
+
+    <div class="mb-2 px-2" style="max-width:700px;margin:auto;">
+      <h2 class="fw-bold mb-1">{{ spot.name }}</h2>
+      <div class="mb-2 text-muted" style="font-size:1.08em;">
+        <span class="me-3"><b>Category:</b> {{ spot.category|default:"Uncategorized" }}</span>
+        <span style="color:#FFD700;"><b>{{ spot.rating|default:"No rating" }}</b> <span class="star">&#9733;</span></span>
+      </div>
+      <p style="font-size:1.08em; color:#444;">{{ spot.description }}</p>
+      <hr>
+      <div class="mb-2" style="font-size:1.08em;">
+        <div class="mb-1"><b>Address:</b> {{ spot.address }}</div>
+        {% if spot.website %}
+          <div class="mb-1"><b>Website:</b> <a href="{{ spot.website }}" target="_blank">{{ spot.website }}</a></div>
+        {% endif %}
+      </div>
+
+      {% if spot.map_embed %}
+        <div class="mb-4 mt-2">
+          <iframe src="{{ spot.map_embed }}" width="100%" height="450" style="border:0; border-radius:12px;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="alert alert-warning">No spot selected.</div>
+  {% endif %}
+</div>
+
+<style>
+.star {
+  margin-left: 3px;
+  font-size: 1.15em;
+  vertical-align: middle;
+}
+</style>
+{% endblock %}
